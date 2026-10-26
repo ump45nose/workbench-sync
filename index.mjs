@@ -108,17 +108,17 @@ var require_visit = __commonJS({
     visit.BREAK = BREAK;
     visit.SKIP = SKIP;
     visit.REMOVE = REMOVE;
-    function visit_(key, node, visitor, path4) {
-      const ctrl = callVisitor(key, node, visitor, path4);
+    function visit_(key, node, visitor, path5) {
+      const ctrl = callVisitor(key, node, visitor, path5);
       if (identity.isNode(ctrl) || identity.isPair(ctrl)) {
-        replaceNode(key, path4, ctrl);
-        return visit_(key, ctrl, visitor, path4);
+        replaceNode(key, path5, ctrl);
+        return visit_(key, ctrl, visitor, path5);
       }
       if (typeof ctrl !== "symbol") {
         if (identity.isCollection(node)) {
-          path4 = Object.freeze(path4.concat(node));
+          path5 = Object.freeze(path5.concat(node));
           for (let i = 0; i < node.items.length; ++i) {
-            const ci = visit_(i, node.items[i], visitor, path4);
+            const ci = visit_(i, node.items[i], visitor, path5);
             if (typeof ci === "number")
               i = ci - 1;
             else if (ci === BREAK)
@@ -129,13 +129,13 @@ var require_visit = __commonJS({
             }
           }
         } else if (identity.isPair(node)) {
-          path4 = Object.freeze(path4.concat(node));
-          const ck = visit_("key", node.key, visitor, path4);
+          path5 = Object.freeze(path5.concat(node));
+          const ck = visit_("key", node.key, visitor, path5);
           if (ck === BREAK)
             return BREAK;
           else if (ck === REMOVE)
             node.key = null;
-          const cv = visit_("value", node.value, visitor, path4);
+          const cv = visit_("value", node.value, visitor, path5);
           if (cv === BREAK)
             return BREAK;
           else if (cv === REMOVE)
@@ -156,17 +156,17 @@ var require_visit = __commonJS({
     visitAsync.BREAK = BREAK;
     visitAsync.SKIP = SKIP;
     visitAsync.REMOVE = REMOVE;
-    async function visitAsync_(key, node, visitor, path4) {
-      const ctrl = await callVisitor(key, node, visitor, path4);
+    async function visitAsync_(key, node, visitor, path5) {
+      const ctrl = await callVisitor(key, node, visitor, path5);
       if (identity.isNode(ctrl) || identity.isPair(ctrl)) {
-        replaceNode(key, path4, ctrl);
-        return visitAsync_(key, ctrl, visitor, path4);
+        replaceNode(key, path5, ctrl);
+        return visitAsync_(key, ctrl, visitor, path5);
       }
       if (typeof ctrl !== "symbol") {
         if (identity.isCollection(node)) {
-          path4 = Object.freeze(path4.concat(node));
+          path5 = Object.freeze(path5.concat(node));
           for (let i = 0; i < node.items.length; ++i) {
-            const ci = await visitAsync_(i, node.items[i], visitor, path4);
+            const ci = await visitAsync_(i, node.items[i], visitor, path5);
             if (typeof ci === "number")
               i = ci - 1;
             else if (ci === BREAK)
@@ -177,13 +177,13 @@ var require_visit = __commonJS({
             }
           }
         } else if (identity.isPair(node)) {
-          path4 = Object.freeze(path4.concat(node));
-          const ck = await visitAsync_("key", node.key, visitor, path4);
+          path5 = Object.freeze(path5.concat(node));
+          const ck = await visitAsync_("key", node.key, visitor, path5);
           if (ck === BREAK)
             return BREAK;
           else if (ck === REMOVE)
             node.key = null;
-          const cv = await visitAsync_("value", node.value, visitor, path4);
+          const cv = await visitAsync_("value", node.value, visitor, path5);
           if (cv === BREAK)
             return BREAK;
           else if (cv === REMOVE)
@@ -210,23 +210,23 @@ var require_visit = __commonJS({
       }
       return visitor;
     }
-    function callVisitor(key, node, visitor, path4) {
+    function callVisitor(key, node, visitor, path5) {
       if (typeof visitor === "function")
-        return visitor(key, node, path4);
+        return visitor(key, node, path5);
       if (identity.isMap(node))
-        return visitor.Map?.(key, node, path4);
+        return visitor.Map?.(key, node, path5);
       if (identity.isSeq(node))
-        return visitor.Seq?.(key, node, path4);
+        return visitor.Seq?.(key, node, path5);
       if (identity.isPair(node))
-        return visitor.Pair?.(key, node, path4);
+        return visitor.Pair?.(key, node, path5);
       if (identity.isScalar(node))
-        return visitor.Scalar?.(key, node, path4);
+        return visitor.Scalar?.(key, node, path5);
       if (identity.isAlias(node))
-        return visitor.Alias?.(key, node, path4);
+        return visitor.Alias?.(key, node, path5);
       return void 0;
     }
-    function replaceNode(key, path4, node) {
-      const parent = path4[path4.length - 1];
+    function replaceNode(key, path5, node) {
+      const parent = path5[path5.length - 1];
       if (identity.isCollection(parent)) {
         parent.items[key] = node;
       } else if (identity.isPair(parent)) {
@@ -838,10 +838,10 @@ var require_Collection = __commonJS({
     var createNode = require_createNode();
     var identity = require_identity();
     var Node = require_Node();
-    function collectionFromPath(schema, path4, value) {
+    function collectionFromPath(schema, path5, value) {
       let v = value;
-      for (let i = path4.length - 1; i >= 0; --i) {
-        const k = path4[i];
+      for (let i = path5.length - 1; i >= 0; --i) {
+        const k = path5[i];
         if (typeof k === "number" && Number.isInteger(k) && k >= 0) {
           const a = [];
           a[k] = v;
@@ -860,7 +860,7 @@ var require_Collection = __commonJS({
         sourceObjects: /* @__PURE__ */ new Map()
       });
     }
-    var isEmptyPath = (path4) => path4 == null || typeof path4 === "object" && !!path4[Symbol.iterator]().next().done;
+    var isEmptyPath = (path5) => path5 == null || typeof path5 === "object" && !!path5[Symbol.iterator]().next().done;
     var Collection = class extends Node.NodeBase {
       constructor(type, schema) {
         super(type);
@@ -890,11 +890,11 @@ var require_Collection = __commonJS({
        * be a Pair instance or a `{ key, value }` object, which may not have a key
        * that already exists in the map.
        */
-      addIn(path4, value) {
-        if (isEmptyPath(path4))
+      addIn(path5, value) {
+        if (isEmptyPath(path5))
           this.add(value);
         else {
-          const [key, ...rest] = path4;
+          const [key, ...rest] = path5;
           const node = this.get(key, true);
           if (identity.isCollection(node))
             node.addIn(rest, value);
@@ -908,8 +908,8 @@ var require_Collection = __commonJS({
        * Removes a value from the collection.
        * @returns `true` if the item was found and removed.
        */
-      deleteIn(path4) {
-        const [key, ...rest] = path4;
+      deleteIn(path5) {
+        const [key, ...rest] = path5;
         if (rest.length === 0)
           return this.delete(key);
         const node = this.get(key, true);
@@ -923,8 +923,8 @@ var require_Collection = __commonJS({
        * scalar values from their surrounding node; to disable set `keepScalar` to
        * `true` (collections are always returned intact).
        */
-      getIn(path4, keepScalar) {
-        const [key, ...rest] = path4;
+      getIn(path5, keepScalar) {
+        const [key, ...rest] = path5;
         const node = this.get(key, true);
         if (rest.length === 0)
           return !keepScalar && identity.isScalar(node) ? node.value : node;
@@ -942,8 +942,8 @@ var require_Collection = __commonJS({
       /**
        * Checks if the collection includes a value with the key `key`.
        */
-      hasIn(path4) {
-        const [key, ...rest] = path4;
+      hasIn(path5) {
+        const [key, ...rest] = path5;
         if (rest.length === 0)
           return this.has(key);
         const node = this.get(key, true);
@@ -953,8 +953,8 @@ var require_Collection = __commonJS({
        * Sets a value in this collection. For `!!set`, `value` needs to be a
        * boolean to add/remove the item from the set.
        */
-      setIn(path4, value) {
-        const [key, ...rest] = path4;
+      setIn(path5, value) {
+        const [key, ...rest] = path5;
         if (rest.length === 0) {
           this.set(key, value);
         } else {
@@ -3469,9 +3469,9 @@ var require_Document = __commonJS({
           this.contents.add(value);
       }
       /** Adds a value to the document. */
-      addIn(path4, value) {
+      addIn(path5, value) {
         if (assertCollection(this.contents))
-          this.contents.addIn(path4, value);
+          this.contents.addIn(path5, value);
       }
       /**
        * Create a new `Alias` node, ensuring that the target `node` has the required anchor.
@@ -3546,14 +3546,14 @@ var require_Document = __commonJS({
        * Removes a value from the document.
        * @returns `true` if the item was found and removed.
        */
-      deleteIn(path4) {
-        if (Collection.isEmptyPath(path4)) {
+      deleteIn(path5) {
+        if (Collection.isEmptyPath(path5)) {
           if (this.contents == null)
             return false;
           this.contents = null;
           return true;
         }
-        return assertCollection(this.contents) ? this.contents.deleteIn(path4) : false;
+        return assertCollection(this.contents) ? this.contents.deleteIn(path5) : false;
       }
       /**
        * Returns item at `key`, or `undefined` if not found. By default unwraps
@@ -3568,10 +3568,10 @@ var require_Document = __commonJS({
        * scalar values from their surrounding node; to disable set `keepScalar` to
        * `true` (collections are always returned intact).
        */
-      getIn(path4, keepScalar) {
-        if (Collection.isEmptyPath(path4))
+      getIn(path5, keepScalar) {
+        if (Collection.isEmptyPath(path5))
           return !keepScalar && identity.isScalar(this.contents) ? this.contents.value : this.contents;
-        return identity.isCollection(this.contents) ? this.contents.getIn(path4, keepScalar) : void 0;
+        return identity.isCollection(this.contents) ? this.contents.getIn(path5, keepScalar) : void 0;
       }
       /**
        * Checks if the document includes a value with the key `key`.
@@ -3582,10 +3582,10 @@ var require_Document = __commonJS({
       /**
        * Checks if the document includes a value at `path`.
        */
-      hasIn(path4) {
-        if (Collection.isEmptyPath(path4))
+      hasIn(path5) {
+        if (Collection.isEmptyPath(path5))
           return this.contents !== void 0;
-        return identity.isCollection(this.contents) ? this.contents.hasIn(path4) : false;
+        return identity.isCollection(this.contents) ? this.contents.hasIn(path5) : false;
       }
       /**
        * Sets a value in this document. For `!!set`, `value` needs to be a
@@ -3602,13 +3602,13 @@ var require_Document = __commonJS({
        * Sets a value in this document. For `!!set`, `value` needs to be a
        * boolean to add/remove the item from the set.
        */
-      setIn(path4, value) {
-        if (Collection.isEmptyPath(path4)) {
+      setIn(path5, value) {
+        if (Collection.isEmptyPath(path5)) {
           this.contents = value;
         } else if (this.contents == null) {
-          this.contents = Collection.collectionFromPath(this.schema, Array.from(path4), value);
+          this.contents = Collection.collectionFromPath(this.schema, Array.from(path5), value);
         } else if (assertCollection(this.contents)) {
-          this.contents.setIn(path4, value);
+          this.contents.setIn(path5, value);
         }
       }
       /**
@@ -5569,9 +5569,9 @@ var require_cst_visit = __commonJS({
     visit.BREAK = BREAK;
     visit.SKIP = SKIP;
     visit.REMOVE = REMOVE;
-    visit.itemAtPath = (cst, path4) => {
+    visit.itemAtPath = (cst, path5) => {
       let item = cst;
-      for (const [field, index] of path4) {
+      for (const [field, index] of path5) {
         const tok = item?.[field];
         if (tok && "items" in tok) {
           item = tok.items[index];
@@ -5580,23 +5580,23 @@ var require_cst_visit = __commonJS({
       }
       return item;
     };
-    visit.parentCollection = (cst, path4) => {
-      const parent = visit.itemAtPath(cst, path4.slice(0, -1));
-      const field = path4[path4.length - 1][0];
+    visit.parentCollection = (cst, path5) => {
+      const parent = visit.itemAtPath(cst, path5.slice(0, -1));
+      const field = path5[path5.length - 1][0];
       const coll = parent?.[field];
       if (coll && "items" in coll)
         return coll;
       throw new Error("Parent collection not found");
     };
-    function _visit(path4, item, visitor) {
-      let ctrl = visitor(item, path4);
+    function _visit(path5, item, visitor) {
+      let ctrl = visitor(item, path5);
       if (typeof ctrl === "symbol")
         return ctrl;
       for (const field of ["key", "value"]) {
         const token = item[field];
         if (token && "items" in token) {
           for (let i = 0; i < token.items.length; ++i) {
-            const ci = _visit(Object.freeze(path4.concat([[field, i]])), token.items[i], visitor);
+            const ci = _visit(Object.freeze(path5.concat([[field, i]])), token.items[i], visitor);
             if (typeof ci === "number")
               i = ci - 1;
             else if (ci === BREAK)
@@ -5607,10 +5607,10 @@ var require_cst_visit = __commonJS({
             }
           }
           if (typeof ctrl === "function" && field === "key")
-            ctrl = ctrl(item, path4);
+            ctrl = ctrl(item, path5);
         }
       }
-      return typeof ctrl === "function" ? ctrl(item, path4) : ctrl;
+      return typeof ctrl === "function" ? ctrl(item, path5) : ctrl;
     }
     exports.visit = visit;
   }
@@ -6912,14 +6912,14 @@ var require_parser = __commonJS({
             case "scalar":
             case "single-quoted-scalar":
             case "double-quoted-scalar": {
-              const fs4 = this.flowScalar(this.type);
+              const fs5 = this.flowScalar(this.type);
               if (atNextItem || it.value) {
-                map.items.push({ start, key: fs4, sep: [] });
+                map.items.push({ start, key: fs5, sep: [] });
                 this.onKeyLine = true;
               } else if (it.sep) {
-                this.stack.push(fs4);
+                this.stack.push(fs5);
               } else {
-                Object.assign(it, { key: fs4, sep: [] });
+                Object.assign(it, { key: fs5, sep: [] });
                 this.onKeyLine = true;
               }
               return;
@@ -7047,13 +7047,13 @@ var require_parser = __commonJS({
             case "scalar":
             case "single-quoted-scalar":
             case "double-quoted-scalar": {
-              const fs4 = this.flowScalar(this.type);
+              const fs5 = this.flowScalar(this.type);
               if (!it || it.value)
-                fc.items.push({ start: [], key: fs4, sep: [] });
+                fc.items.push({ start: [], key: fs5, sep: [] });
               else if (it.sep)
-                this.stack.push(fs4);
+                this.stack.push(fs5);
               else
-                Object.assign(it, { key: fs4, sep: [] });
+                Object.assign(it, { key: fs5, sep: [] });
               return;
             }
             case "flow-map-end":
@@ -7362,7 +7362,7 @@ var require_dist = __commonJS({
 });
 
 // server/workbench-sync/src/index.ts
-import crypto3 from "node:crypto";
+import crypto4 from "node:crypto";
 
 // src/sync/text.ts
 var import_yaml = __toESM(require_dist(), 1);
@@ -7431,14 +7431,14 @@ function uniqueNames(items, key, title, fallback) {
   }
   return names2;
 }
-var getPath = (source, path4) => path4.reduce((v, k) => v == null ? void 0 : v[k], source);
-function setPath(target, path4, value) {
+var getPath = (source, path5) => path5.reduce((v, k) => v == null ? void 0 : v[k], source);
+function setPath(target, path5, value) {
   let node = target;
-  for (const key of path4.slice(0, -1)) {
+  for (const key of path5.slice(0, -1)) {
     if (node[key] == null || typeof node[key] !== "object") node[key] = {};
     node = node[key];
   }
-  node[path4.at(-1)] = value;
+  node[path5.at(-1)] = value;
 }
 var setNested = (target, name, value) => setPath(target, name.split("."), value);
 var getNested = (source, name) => getPath(source, name.split("."));
@@ -8315,6 +8315,14 @@ function st() {
     return { readCard: card.read, writeCard: card.write, getConfigValue: util.getConfigValue };
   })();
 }
+async function stRouters() {
+  const root = serverRoot(), load = (file) => import(pathToFileURL(path.join(root, file)).href);
+  const [settings, characters] = await Promise.all([
+    load("src/endpoints/settings.js"),
+    load("src/endpoints/characters.js")
+  ]);
+  return { settings: settings.router, characters: characters.router };
+}
 async function writeAtomic(file, data) {
   const temp = path.join(path.dirname(file), `.${path.basename(file)}.${process.pid}.${Date.now()}.wbsync`);
   await fs.promises.writeFile(temp, data);
@@ -9130,6 +9138,199 @@ data: ${JSON.stringify(data)}
   }
 };
 
+// server/workbench-sync/src/cache.ts
+import fs4 from "node:fs";
+import path4 from "node:path";
+import zlib from "node:zlib";
+import crypto3 from "node:crypto";
+import { promisify } from "node:util";
+var settingsDirectories = [
+  "novelAI_Settings",
+  "openAI_Settings",
+  "textGen_Settings",
+  "koboldAI_Settings",
+  "worlds",
+  "themes",
+  "movingUI",
+  "quickreplies",
+  "instruct",
+  "context",
+  "sysprompt",
+  "reasoning"
+];
+async function statLine(file, name) {
+  try {
+    const s = await fs4.promises.stat(file);
+    return `${name}	${s.ino}	${s.size}	${s.mtimeMs}`;
+  } catch {
+    return `${name}	-`;
+  }
+}
+async function directoryLines(dir, depth) {
+  let names2;
+  try {
+    names2 = await fs4.promises.readdir(dir, { withFileTypes: true });
+  } catch {
+    return [`${dir}	-`];
+  }
+  names2.sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
+  const lines = await Promise.all(
+    names2.map(async (entry) => {
+      const file = path4.join(dir, entry.name);
+      if (depth > 0 && entry.isDirectory()) return [file, ...await directoryLines(file, depth - 1)];
+      return [await statLine(file, file)];
+    })
+  );
+  return [dir, ...lines.flat()];
+}
+async function fingerprint(kind, dirs2) {
+  const parts = kind === "settings" ? [
+    [await statLine(path4.join(dirs2.root, "settings.json"), "settings.json")],
+    ...await Promise.all(settingsDirectories.map((key) => directoryLines(dirs2[key], 0)))
+  ] : await Promise.all([directoryLines(dirs2.characters, 0), directoryLines(dirs2.chats, 1)]);
+  return crypto3.createHash("sha1").update(parts.flat().join("\n")).digest("hex");
+}
+var brotli = promisify(zlib.brotliCompress);
+var gzip = promisify(zlib.gzip);
+function pickEncoding(header) {
+  const accepted = new Set(
+    String(header ?? "").split(",").map((part) => part.trim().split(";")).filter(([, ...params2]) => !params2.some((p) => /^\s*q\s*=\s*0(\.0*)?\s*$/.test(p))).map(([token]) => token.trim().toLowerCase())
+  );
+  return accepted.has("br") ? "br" : accepted.has("gzip") || accepted.has("*") ? "gzip" : null;
+}
+var ResponseCache = class {
+  entries = /* @__PURE__ */ new Map();
+  generations = /* @__PURE__ */ new Map();
+  counts = { hits: 0, misses: 0, bytes: 0 };
+  generation(handle) {
+    return this.generations.get(handle) ?? 0;
+  }
+  /** Drops the user's responses; a fill that started before this is discarded. */
+  invalidate(handle) {
+    this.generations.set(handle, this.generation(handle) + 1);
+    for (const kind of ["settings", "characters"]) this.entries.delete(`${handle}:${kind}`);
+  }
+  get(handle, kind, print) {
+    const entry = this.entries.get(`${handle}:${kind}`);
+    return entry?.fingerprint === print ? entry : void 0;
+  }
+  /** Stores a response only when nothing invalidated the user since `generation` was read. */
+  set(handle, kind, print, generation, type, body) {
+    if (this.generation(handle) !== generation) return false;
+    this.entries.set(`${handle}:${kind}`, { fingerprint: print, type, body, encoded: {} });
+    return true;
+  }
+  /** The body as sent for `encoding`; each encoding is compressed once per entry. */
+  encode(entry, encoding) {
+    if (!encoding) return Promise.resolve(entry.body);
+    return entry.encoded[encoding] ??= encoding === "br" ? brotli(entry.body, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 4 } }) : gzip(entry.body);
+  }
+  clear() {
+    this.entries.clear();
+  }
+};
+var size = (bytes) => bytes >= 1048576 ? `${(bytes / 1048576).toFixed(2)} MB` : `${Math.round(bytes / 1024)} KB`;
+function prepend(router, add) {
+  const before = router.stack.length;
+  add();
+  const added = router.stack.splice(before);
+  router.stack.unshift(...added);
+  return () => {
+    for (const layer of added) {
+      const at = router.stack.indexOf(layer);
+      if (at >= 0) router.stack.splice(at, 1);
+    }
+  };
+}
+function reader(cache2, kind) {
+  return async (req, res, next) => {
+    const user = req.user;
+    if (!user) return next();
+    const handle = user.profile.handle, generation = cache2.generation(handle), started = Date.now();
+    let print;
+    try {
+      print = await fingerprint(kind, user.directories);
+    } catch (error) {
+      console.warn("workbench-sync: cache fingerprint failed, serving from source:", error);
+      return next();
+    }
+    const hit = cache2.get(handle, kind, print);
+    if (hit) {
+      try {
+        const encoding = pickEncoding(req.headers["accept-encoding"]), body = await cache2.encode(hit, encoding);
+        res.setHeader("Content-Type", hit.type);
+        res.setHeader("Vary", "Accept-Encoding");
+        if (encoding) res.setHeader("Content-Encoding", encoding);
+        res.setHeader("Content-Length", body.length);
+        res.end(body);
+        cache2.counts.hits++;
+        cache2.counts.bytes += body.length;
+        console.log(
+          `workbench-sync: cache hit ${kind} [${handle}] ${size(hit.body.length)}${encoding ? ` \u2192 ${encoding} ${size(body.length)}` : ""} in ${Date.now() - started} ms \xB7 hits ${cache2.counts.hits} / misses ${cache2.counts.misses}`
+        );
+      } catch (error) {
+        console.warn("workbench-sync: cache hit could not be sent, serving from source:", error);
+        cache2.invalidate(handle);
+        next();
+      }
+      return;
+    }
+    cache2.counts.misses++;
+    const send = res.send;
+    res.send = function(body) {
+      if (this.statusCode === 200 && (typeof body === "string" || Buffer.isBuffer(body))) {
+        res.send = send;
+        const buffer = Buffer.from(body), stored = cache2.set(
+          handle,
+          kind,
+          print,
+          generation,
+          String(this.getHeader("Content-Type") || "application/json; charset=utf-8"),
+          buffer
+        );
+        console.log(
+          `workbench-sync: cache miss ${kind} [${handle}] ${size(buffer.length)} in ${Date.now() - started} ms${stored ? "" : " (not stored: changed meanwhile)"} \xB7 hits ${cache2.counts.hits} / misses ${cache2.counts.misses}`
+        );
+      }
+      return send.call(this, body);
+    };
+    next();
+  };
+}
+function writer(cache2, reads) {
+  return (req, res, next) => {
+    const handle = req.user?.profile.handle;
+    if (handle && !reads.includes(req.path)) {
+      cache2.invalidate(handle);
+      let done = false;
+      const after = () => {
+        if (!done) cache2.invalidate(handle);
+        done = true;
+      };
+      res.on("finish", after);
+      res.on("close", after);
+    }
+    next();
+  };
+}
+function install(cache2, routers) {
+  const has = (router, route2) => Array.isArray(router?.stack) && router.stack.some((layer) => layer.route?.path === route2);
+  if (!has(routers.settings, "/get") || !has(routers.characters, "/all")) return null;
+  const undo = [
+    prepend(routers.settings, () => routers.settings.use(writer(cache2, ["/get", "/get-snapshots"]))),
+    prepend(routers.settings, () => routers.settings.post("/get", reader(cache2, "settings"))),
+    prepend(
+      routers.characters,
+      () => routers.characters.use(writer(cache2, ["/all", "/get", "/chats", "/export"]))
+    ),
+    prepend(routers.characters, () => routers.characters.post("/all", reader(cache2, "characters")))
+  ];
+  return () => {
+    undo.forEach((fn) => fn());
+    cache2.clear();
+  };
+}
+
 // server/workbench-sync/src/index.ts
 var info = {
   id: "workbench-sync",
@@ -9138,6 +9339,17 @@ var info = {
 };
 var VERSION = "1";
 var hubs = /* @__PURE__ */ new Map();
+var cache = new ResponseCache();
+var uncache = null;
+async function writing(req, fn) {
+  const handle = req.user?.profile.handle;
+  if (handle) cache.invalidate(handle);
+  try {
+    return await fn();
+  } finally {
+    if (handle) cache.invalidate(handle);
+  }
+}
 function hubOf(req) {
   if (!req.user) throw new Refused("\u9700\u8981\u5148\u767B\u5F55\u9152\u9986\u3002", 401);
   const handle = req.user.profile.handle;
@@ -9156,7 +9368,7 @@ async function checkToken(req) {
   const { getConfigValue } = await st(), token = String(getConfigValue("workbenchSync.token", "") ?? "");
   if (!token) return;
   const given = Buffer.from(text(req.headers["x-workbench-sync-token"])), expected = Buffer.from(token);
-  if (given.length !== expected.length || !crypto3.timingSafeEqual(given, expected))
+  if (given.length !== expected.length || !crypto4.timingSafeEqual(given, expected))
     throw new Refused("\u8BBF\u95EE\u4EE4\u724C\u4E0D\u6B63\u786E\uFF08X-Workbench-Sync-Token\uFF09\u3002", 403);
 }
 function route(handler, ide = true) {
@@ -9173,6 +9385,14 @@ function route(handler, ide = true) {
   };
 }
 async function init(router) {
+  try {
+    uncache = install(cache, await stRouters());
+    console.log(
+      uncache ? "workbench-sync: response cache on for /api/settings/get and /api/characters/all" : "workbench-sync: response cache off (SillyTavern routers not recognised)"
+    );
+  } catch (error) {
+    console.warn("workbench-sync: response cache off:", error);
+  }
   router.get(
     "/info",
     route(async (req) => {
@@ -9182,6 +9402,7 @@ async function init(router) {
         version: VERSION,
         user: req.user.profile.handle,
         token: !!getConfigValue("workbenchSync.token", ""),
+        cache: { on: !!uncache, ...cache.counts },
         ...hub.status()
       };
     }, false)
@@ -9202,16 +9423,16 @@ async function init(router) {
     "/file",
     route(async (req) => {
       if (typeof req.body?.text !== "string") throw new Refused("\u7F3A\u5C11 text\u3002");
-      return hubOf(req).write(pathOf(req.body.path), req.body.text, text(req.body.base));
+      return writing(req, () => hubOf(req).write(pathOf(req.body.path), req.body.text, text(req.body.base)));
     })
   );
   router.post(
     "/delete",
-    route(async (req) => hubOf(req).remove(pathOf(req.body?.path), text(req.body?.base)))
+    route(async (req) => writing(req, () => hubOf(req).remove(pathOf(req.body?.path), text(req.body?.base))))
   );
   router.post(
     "/rename",
-    route(async (req) => hubOf(req).rename(pathOf(req.body?.from), pathOf(req.body?.to)))
+    route(async (req) => writing(req, () => hubOf(req).rename(pathOf(req.body?.from), pathOf(req.body?.to))))
   );
   router.post(
     "/relay",
@@ -9269,6 +9490,8 @@ async function init(router) {
   });
 }
 async function exit() {
+  uncache?.();
+  uncache = null;
   hubs.forEach((hub) => hub.dispose());
   hubs.clear();
 }
