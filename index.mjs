@@ -7403,11 +7403,13 @@ function renderYaml(data) {
   return Object.keys(data).length ? (0, import_yaml.stringify)(data, { lineWidth: 0, minContentWidth: 0 }) : "";
 }
 function splitFront(text2) {
-  text2 = text2.replace(/\r\n/g, "\n");
-  if (!text2.startsWith("---\n")) return { yaml: parseYaml(""), body: text2 };
-  const end = text2.indexOf("\n---\n", 3), tail = text2.endsWith("\n---") ? text2.length - 4 : -1, close = end >= 0 ? end : tail;
-  if (close < 0) throw new SyncError("frontmatter \u7F3A\u5C11\u7ED3\u675F\u7684 ---\u3002", 1);
-  return { yaml: parseYaml(text2.slice(4, close + 1), 1), body: text2.slice(close + 5) };
+  if (!/^---\r?\n/.test(text2)) return { yaml: parseYaml(""), body: text2 };
+  const close = /\r?\n---(?:\r?\n|$)/g;
+  close.lastIndex = 3;
+  const end = close.exec(text2);
+  if (!end) throw new SyncError("frontmatter \u7F3A\u5C11\u7ED3\u675F\u7684 ---\u3002", 1);
+  const header = text2.slice(0, end.index).replace(/\r\n/g, "\n");
+  return { yaml: parseYaml(header.slice(4) + "\n", 1), body: text2.slice(end.index + end[0].length) };
 }
 function joinFront(data, body) {
   return `---
@@ -7442,13 +7444,15 @@ function setPath(target, path5, value) {
 }
 var setNested = (target, name, value) => setPath(target, name.split("."), value);
 var getNested = (source, name) => getPath(source, name.split("."));
+function shown(field, value) {
+  if (field.invert && typeof value === "boolean") value = !value;
+  const label = field.labels?.find(([raw]) => raw === value);
+  return label ? label[1] : value;
+}
 function writeFields(fields3, source, out = {}) {
   for (const field of fields3) {
-    let value = getPath(source, field.path);
-    if (value === void 0) continue;
-    if (field.invert && typeof value === "boolean") value = !value;
-    const label = field.labels?.find(([raw]) => raw === value);
-    setNested(out, field.name, label ? label[1] : value);
+    const value = getPath(source, field.path);
+    if (value !== void 0) setNested(out, field.name, shown(field, value));
   }
   return out;
 }
@@ -7479,7 +7483,7 @@ function readFields(fields3, yaml, base, allowed = []) {
   check(yaml.data, "");
   for (const field of fields3) {
     let value = getNested(yaml.data, field.name);
-    if (value === void 0) continue;
+    if (value === void 0 || sameData(value, shown(field, getPath(base, field.path)))) continue;
     if (field.labels && typeof value === "string") {
       const hit = field.labels.find(([, label]) => label === value);
       if (hit) value = hit[0];
@@ -7720,20 +7724,20 @@ var characterCodec = {
     return files2;
   },
   write(data, file, text2) {
-    text2 = text2.replace(/\r\n/g, "\n");
     if (file === CARD) {
-      const next = readFields(fields2, parseYaml(text2), data);
+      const next = readFields(fields2, parseYaml(text2.replace(/\r\n/g, "\n")), data);
       if (typeof next.name !== "string" || !next.name.trim()) throw new SyncError("\u300C\u540D\u79F0\u300D\u4E0D\u80FD\u4E3A\u7A7A\u3002", 1);
       return next;
     }
     const field = texts.find(([name]) => name === file)?.[1];
-    if (field) return text2 === "" && data[field] === void 0 ? data : { ...data, [field]: text2 };
+    if (field) return text2 === String(data[field] ?? "") ? data : { ...data, [field]: text2 };
     const index = greetingIndex(file), greetings = [...Array.isArray(data.alternate_greetings) ? data.alternate_greetings : []];
     if (index < 0) throw new SyncError("\u89D2\u8272\u76EE\u5F55\u91CC\u53EA\u80FD\u5199\u5DF2\u6709\u7684\u6587\u4EF6\u548C\u300C\u5907\u9009\u5F00\u573A\u767D/NN.md\u300D\u3002");
     if (index > greetings.length)
       throw new SyncError(
         `\u5907\u9009\u5F00\u573A\u767D\u8BF7\u6309\u987A\u5E8F\u7F16\u53F7\uFF1A\u4E0B\u4E00\u4E2A\u662F ${greetingFile(greetings.length, greetings.length + 1)}\u3002`
       );
+    if (index < greetings.length && text2 === String(greetings[index] ?? "")) return data;
     greetings[index] = text2;
     return { ...data, alternate_greetings: greetings };
   },
@@ -7761,10 +7765,30 @@ function mirrorCard(card, data) {
   };
 }
 
+// src/host/secrets.js
+var sensitiveFields = Object.freeze([
+  "reverse_proxy",
+  "proxy_password",
+  "custom_url",
+  "custom_include_body",
+  "custom_exclude_body",
+  "custom_include_headers",
+  "vertexai_region",
+  "vertexai_express_project_id",
+  "azure_base_url",
+  "azure_deployment_name",
+  "workers_ai_account_id"
+]);
+var credential = /password|passwd|passphrase|secret|authorization|cookie|credential|api_?key|private_?key|^token$|(?:^|_)(?:access|refresh|id|auth|bearer|session|csrf|xsrf|oauth|api)_?tokens?(?:_|$)/;
+function isSensitiveKey(name) {
+  const words = name.replace(/([a-z\d])([A-Z])/g, "$1_$2").toLowerCase().replace(/[^a-z\d]+/g, "_").replace(/^_|_$/g, "");
+  return sensitiveFields.includes(words) || credential.test(words);
+}
+
 // src/sync/preset.ts
 var PARAMS = "\u53C2\u6570.yaml";
 var PROMPTS = "\u63D0\u793A\u8BCD";
-var hidden = ["prompts", "prompt_order", "proxy_password"];
+var hidden = (key) => key === "prompts" || key === "prompt_order" || isSensitiveKey(key);
 var params = [
   ["temperature", "\u6E29\u5EA6", "number"],
   ["top_p", "Top P", "number"],
@@ -7833,7 +7857,7 @@ function promptName(file) {
 var presetCodec = {
   dirs: [PROMPTS],
   files(preset) {
-    const out = writeFields(params, preset), other = otherKeys(params, preset, hidden);
+    const out = writeFields(params, preset), other = otherKeys(params, preset, Object.keys(preset).filter(hidden));
     if (Object.keys(other).length) out.\u5176\u4ED6 = other;
     const files2 = /* @__PURE__ */ new Map([[PARAMS, renderYaml(out)]]);
     for (const { prompt, enabled, file, explicit } of promptList(preset)) {
@@ -7850,7 +7874,7 @@ var presetCodec = {
       if (!other || typeof other !== "object" || Array.isArray(other))
         throw new SyncError("\u300C\u5176\u4ED6\u300D\u5E94\u662F\u300C\u952E: \u503C\u300D\u7684\u6620\u5C04\u3002", yaml2.line("\u5176\u4ED6"));
       for (const key of Object.keys(other))
-        if (hidden.includes(key) || params.some((p) => p.path[0] === key))
+        if (hidden(key) || params.some((p) => p.path[0] === key))
           throw new SyncError(`\u300C\u5176\u4ED6\u300D\u91CC\u4E0D\u80FD\u5199 ${key}\u3002`, yaml2.line(`\u5176\u4ED6.${key}`));
       return { ...next2, ...other };
     }
@@ -8113,11 +8137,12 @@ var statuses = [
 var heading = /^(#{1,32}) (.*)$/;
 var headingLike = /^\\*#{1,32} /;
 var attributes = /^<!--(.*)-->$/;
+var headingText = (title) => title.replace(/\r\n?|[\n\u2028\u2029]/g, " ");
 var outlineCodec = {
   render(data) {
     const depth = (n) => n.parent ? depth(data.nodes.find((p) => p.id === n.parent)) + 1 : 1;
     return orderedNodes(data).map((n) => {
-      const status = statuses.find(([s]) => s === n.status)[1], head = `${"#".repeat(depth(n))} ${n.title.replace(/\n/g, " ")}
+      const status = statuses.find(([s]) => s === n.status)[1], head = `${"#".repeat(depth(n))} ${headingText(n.title)}
 <!-- id: ${n.id} \xB7 \u72B6\u6001: ${status} \xB7 \u8F6E\u6570: ${n.rounds} \xB7 \u5DF2\u5B8C\u6210: ${n.completed} -->`, body = n.content.split("\n").map((line) => headingLike.test(line) ? "\\" + line : line).join("\n");
       return n.content ? `${head}
 ${body}` : head;
@@ -8126,7 +8151,7 @@ ${body}` : head;
   parse(base, text2) {
     const lines = text2.replace(/\r\n/g, "\n").split("\n");
     if (lines.at(-1) === "") lines.pop();
-    const nodes = [], stack = [], ids = /* @__PURE__ */ new Set();
+    const nodes = [], stack = [], ids = /* @__PURE__ */ new Set(), titles = new Map(base.nodes.map((n) => [n.id, n.title]));
     let body = null;
     const close = (last) => {
       const node = nodes.at(-1);
@@ -8174,6 +8199,8 @@ ${body}` : head;
         }
       }
       if (!node.id) node.id = randomId();
+      const title = titles.get(node.id);
+      if (title !== void 0 && headingText(title) === node.title) node.title = title;
       if (ids.has(node.id)) throw new SyncError(`\u8282\u70B9 id ${node.id} \u91CD\u590D\uFF1B\u590D\u5236\u8282\u70B9\u65F6\u8BF7\u5220\u53BB id\u3002`, i + 1);
       ids.add(node.id);
       nodes.push(node);
@@ -8233,7 +8260,7 @@ function readCells(line) {
   return cells;
 }
 var rowLine = (cells) => `| ${cells.map(writeCell).join(" | ")} |`;
-var keyOf = (row) => row.id || `#${row.index}`;
+var keyOf = (row) => !row.id ? `#${row.index}` : /^\\*#\d+$/.test(row.id) ? "\\" + row.id : row.id;
 var tableCodec = {
   render(table) {
     const header = [ID, ...table.columns];
